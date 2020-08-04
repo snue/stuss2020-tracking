@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from time import sleep
+from datetime import datetime
 import evdev
 from evdev import ecodes
 
@@ -17,19 +17,38 @@ scancodes = {
 scanner = evdev.InputDevice('/dev/input/by-id/usb-BarCode_WPM_USB-event-kbd')
 scanner.grab()
 
+ID_LENGTH = 4
+
+status = 'kommt'
+
+def handle(scan):
+    global status
+    if scan == 'KOMMT':
+        status = 'kommt'
+    elif scan == 'GEHT':
+        status = 'geht'
+    elif len(scan) == ID_LENGTH:
+        try:
+            id = int(scan)
+            now = datetime.now()
+            print('{} ID {} {}'.format(now, id, status))
+        except:
+            print('Not a valid ID: {}'.format(scan))
+    else:
+        print(scan)
+
 def scan():
-    string = ''
+    result = ''
     for event in scanner.read_loop():
         if event.type == ecodes.EV_KEY:
             key = evdev.categorize(event)
             if key.keystate == 1: # Key DOWN
                 if key.scancode == 28:
-                    result = string
-                    string = ''
-                    print(result)
+                    handle(result)
+                    result = ''
                 else:
-                    string += scancodes.get(key.scancode)
+                    result += scancodes.get(key.scancode)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     scan()
 
