@@ -3,6 +3,8 @@
 from datetime import datetime
 import evdev
 from evdev import ecodes
+import mysql.connector
+import random
 
 scancodes = {
     # Scancode: ASCIICode
@@ -17,12 +19,29 @@ scancodes = {
 scanner = evdev.InputDevice('/dev/input/by-id/usb-BarCode_WPM_USB-event-kbd')
 scanner.grab()
 
+db = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="",
+    database="besuchertracker"
+)
+
+cursor = db.cursor(prepared=True)
+
 ID_LENGTH = 4
 
 status = 'kommt'
 
+track_user_statement='INSERT INTO verlaufsdaten (zeitstempel, besucher_id, aktion) VALUES (%s, %s, %s)'
+check_id_statement='SELECT zustand FROM zustandsdaten WHERE besucher_id = %s LIMIT 1'
+insert_status_statement='INSERT INTO zustandsdaten (besucher_id, zustand) VALUES (%s, %s)'
+update_status_statement='UPDATE zustandsdaten SET zustand = %s WHERE besucher_id = %s'
+
 def handle(scan):
     global status
+
+    status = random.choice(('geht','kommt'))
+
     if scan == 'KOMMT':
         status = 'kommt'
     elif scan == 'GEHT':
@@ -30,10 +49,19 @@ def handle(scan):
     elif len(scan) == ID_LENGTH:
         try:
             id = int(scan)
-            now = datetime.now()
+            now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            cursor.execute(track_user_statement, (now, id, status))
+            cursor.execute(check_id_statement, (id,))
+            cursor.fetchall()
+            if cursor.rowcount == 0:
+                cursor.execute(insert_status_statement, (id, status))
+            else:
+                cursor.execute(update_status_statement, (status, id))
+
+            db.commit()
             print('{} ID {} {}'.format(now, id, status))
         except:
-            print('Not a valid ID: {}'.format(scan))
+            print('Not a valid ID or other exception: {}'.format(scan))
     else:
         print(scan)
 
