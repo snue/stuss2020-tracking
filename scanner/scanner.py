@@ -49,7 +49,7 @@ def handle(scan):
     elif len(scan) == ID_LENGTH:
         try:
             id = int(scan)
-            now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
             cursor.execute(track_user_statement, (now, id, status))
             cursor.execute(check_id_statement, (id,))
             cursor.fetchall()
