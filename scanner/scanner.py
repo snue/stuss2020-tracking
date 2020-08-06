@@ -13,7 +13,7 @@ scancodes = {
     20: u'T', 21: u'Y', 22: u'U', 23: u'I', 24: u'O', 25: u'P', 26: u'[', 27: u']', 28: u'CRLF', 29: u'LCTRL',
     30: u'A', 31: u'S', 32: u'D', 33: u'F', 34: u'G', 35: u'H', 36: u'J', 37: u'K', 38: u'L', 39: u';',
     40: u'"', 41: u'`', 42: u'LSHFT', 43: u'\\', 44: u'Z', 45: u'X', 46: u'C', 47: u'V', 48: u'B', 49: u'N',
-    50: u'M', 51: u',', 52: u'.', 53: u'/', 54: u'RSHFT', 56: u'LALT', 100: u'RALT'
+    50: u'M', 51: u',', 52: u'.', 53: u'/', 54: u'RSHFT', 56: u'LALT', 57: u' ', 100: u'RALT'
 }
 
 scanner = evdev.InputDevice('/dev/input/by-id/usb-BarCode_WPM_USB-event-kbd')
@@ -32,10 +32,10 @@ ID_LENGTH = 4
 
 status = 'kommt'
 
-track_user_statement='INSERT INTO verlaufsdaten (zeitstempel, besucher_id, aktion) VALUES (%s, %s, %s)'
-check_id_statement='SELECT zustand FROM zustandsdaten WHERE besucher_id = %s LIMIT 1'
-insert_status_statement='INSERT INTO zustandsdaten (besucher_id, zustand) VALUES (%s, %s)'
-update_status_statement='UPDATE zustandsdaten SET zustand = %s WHERE besucher_id = %s'
+track_user_stmt='INSERT INTO verlaufsdaten (zeitstempel, besucher_id, aktion) VALUES (%s, %s, %s)'
+check_id_stmt='SELECT zustand FROM zustandsdaten WHERE besucher_id = %s LIMIT 1'
+insert_status_stmt='INSERT INTO zustandsdaten (besucher_id, zustand) VALUES (%s, %s)'
+update_status_stmt='UPDATE zustandsdaten SET zustand = %s WHERE besucher_id = %s'
 
 def handle(scan):
     global status
@@ -50,18 +50,20 @@ def handle(scan):
         try:
             id = int(scan)
             now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-            cursor.execute(track_user_statement, (now, id, status))
-            cursor.execute(check_id_statement, (id,))
+            cursor.execute(track_user_stmt, (now, id, status))
+            cursor.execute(check_id_stmt, (id,))
             cursor.fetchall()
             if cursor.rowcount == 0:
-                cursor.execute(insert_status_statement, (id, status))
+                cursor.execute(insert_status_stmt, (id, status))
             else:
-                cursor.execute(update_status_statement, (status, id))
+                cursor.execute(update_status_stmt, (status, id))
 
             db.commit()
             print('{} ID {} {}'.format(now, id, status))
-        except:
-            print('Not a valid ID or other exception: {}'.format(scan))
+        except mysql.connector.Error as e:
+            print('Warning: Database Error - we are losing data! (Scan: {} / Status: {}) ({})'.format(scan, status, e))
+        except Exception as e:
+            print('Not a valid ID or other exception: {} ({})'.format(scan, e))
     else:
         print(scan)
 
@@ -75,7 +77,10 @@ def scan():
                     handle(result)
                     result = ''
                 else:
-                    result += scancodes.get(key.scancode)
+                    chr=scancodes.get(key.scancode)
+                    if chr == None:
+                        chr='<{}>'.format(key.scancode)
+                    result += chr
 
 if __name__ == '__main__':
     scan()
