@@ -6,9 +6,9 @@ CREATE DATABASE IF NOT EXISTS besuchertracker;
 CREATE TABLE IF NOT EXISTS besuchertracker.stammdaten (
   besucher_id BIGINT NULL AUTO_INCREMENT,
   name VARCHAR(45) NULL,
-  addresse1 VARCHAR(45) NULL,
+  adresse1 VARCHAR(45) NULL,
   plz VARCHAR(5) NULL,
-  addresse2 VARCHAR(45) NULL,
+  adresse2 VARCHAR(45) NULL,
   telefon VARCHAR(20) NULL,
   email VARCHAR(45) NULL,
   status VARCHAR(10) NULL,
