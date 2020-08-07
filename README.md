@@ -6,3 +6,4 @@
 * `grafana-config/` - dashboard definitions for grafana
 * `scanner/` - python script for barcode scanner entry/exit tracking
 * `quick/` - qr code quick entry generator code
+* `templates/` - scripts to generate printer input / barcodes etc.
