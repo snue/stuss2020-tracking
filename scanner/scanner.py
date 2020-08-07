@@ -44,8 +44,10 @@ def handle(scan):
 
     if scan == 'KOMMT':
         status = 'kommt'
+        print('Register status "{}"'.format(status))
     elif scan == 'GEHT':
         status = 'geht'
+        print('Register status "{}"'.format(status))
     elif len(scan) == ID_LENGTH:
         try:
             id = int(scan)
