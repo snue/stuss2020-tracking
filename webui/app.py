@@ -30,14 +30,12 @@ update_user_stmt = '''
 
 @app.route('/stammdaten',methods=['POST','GET'])
 def stammdaten():
-    besucher_id = request.form.get('besucher_id','0')
-
-    print ('Executing database queries')
-    cursor.execute(get_user_stmt, (besucher_id,))
-    cursor.fetchall()
 
     if request.method == 'POST':
-        # Update entry
+        # Update entry from form
+        besucher_id = request.form.get('besucher_id', default=0, type=int)
+        cursor.execute(get_user_stmt, (besucher_id,))
+        besucher = cursor.fetchall()
 
         name = request.form.get('name')
         adresse1 = request.form.get('adresse1')
@@ -60,9 +58,42 @@ def stammdaten():
                                               besucher_id))
         db.commit()
     else:
-        print('Loading values for user {}'.format(besucher_id))
+        besucher_id = request.args.get('besucher_id', default=0, type=int)
+        cursor.execute(get_user_stmt, (besucher_id,))
+        besucher = cursor.fetchall()
+        if cursor.rowcount == 0:
+            print('Besucher {} existiert nicht.'.format(besucher_id))
+        else:
+            for b in besucher:
+                name = b[1].decode()
+                adresse1 = b[2].decode()
+                plz = b[3].decode()
+                adresse2 = b[4].decode()
+                telefon = b[5].decode()
+                email = b[6].decode()
+                status = b[7].decode()
+                coronawarn = b[8]
 
-    return render_template('index.html')
+                if besucher_id != b[0]:
+                    print('Warning: unexpected ID {} in query for {}'.format(
+                        b[0], besucher_id))
+
+                print("""
+                ID:      {}
+                Name:    {}
+                Adresse: {}
+                         {} {}
+                Telefon: {}
+                Email:   {}
+                Status:  {}
+                CoronaWarn: {}
+                """.format(besucher_id, name, adresse1, plz, adresse2, telefon,
+                           email, status, coronawarn))
+
+    return render_template('index.html',id = besucher_id, name = name,
+                           adresse1 = adresse1, plz = plz, adresse2 = adresse2,
+                           telefon=telefon, email = email, status = status,
+                           coronawarn = coronawarn)
 
 @app.route('/',methods=['GET'])
 def main():
