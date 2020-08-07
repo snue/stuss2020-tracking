@@ -48,6 +48,9 @@ def handle(scan):
     elif scan == 'GEHT':
         status = 'geht'
         print('Register status "{}"'.format(status))
+    elif scan == 'RESERVIERT':
+        status = 'reserviert'
+        print('Register status "{}"'.format(status))
     elif len(scan) == ID_LENGTH:
         try:
             id = int(scan)
