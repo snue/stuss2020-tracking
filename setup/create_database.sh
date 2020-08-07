@@ -4,7 +4,7 @@ mysql -u root <<EOF
 CREATE DATABASE IF NOT EXISTS besuchertracker;
 
 CREATE TABLE IF NOT EXISTS besuchertracker.stammdaten (
-  besucher_id BIGINT NULL AUTO_INCREMENT,
+  besucher_id BIGINT NULL,
   name VARCHAR(45) NULL,
   adresse1 VARCHAR(45) NULL,
   plz VARCHAR(5) NULL,
