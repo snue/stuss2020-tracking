@@ -45,19 +45,19 @@
                     </li>
                     <li>
                     <p></p>
-                    <input class="form-control mr-sm-2" type="text" placeholder="Name" aria-label="Name" size="25" maxlength="45" name="name" value="{{ name }}">
-                    <input class="form-control mr-sm-2" type="text" placeholder="Adresse (Strasse, Hausnr.)" aria-label="Adresse 1"  maxlength="45" name="adresse1" size="25" value="{{ adresse1 }}">
+                    <input class="form-control mr-sm-2" type="text" placeholder="Name" aria-label="Name" size="25" maxlength="45" name="name" value="{{ name }}" onkeydown="return event.key != 'Enter';">
+                    <input class="form-control mr-sm-2" type="text" placeholder="Adresse (Strasse, Hausnr.)" aria-label="Adresse 1"  maxlength="45" name="adresse1" size="25" value="{{ adresse1 }}" onkeydown="return event.key != 'Enter';">
                     </li>
                     <li>
-                    <input class="form-control mr-sm-2" type="text" placeholder="PLZ" aria-label="PLZ" maxlength="5" name="plz" size="5" value="{{ plz }}">
-                    <input class="form-control mr-sm-2" type="text" placeholder="Adresse (Ort, Land)" aria-label="Adresse 2" maxlength="45" name="adresse2" size="45" value="{{ adresse2 }}">
+                    <input class="form-control mr-sm-2" type="text" placeholder="PLZ" aria-label="PLZ" maxlength="5" name="plz" size="5" value="{{ plz }}" onkeydown="return event.key != 'Enter';">
+                    <input class="form-control mr-sm-2" type="text" placeholder="Adresse (Ort, Land)" aria-label="Adresse 2" maxlength="45" name="adresse2" size="45" value="{{ adresse2 }}" onkeydown="return event.key != 'Enter';">
                     </li>
                     <li>
-                    <input class="form-control mr-sm-2" type="text" placeholder="Telefon" aria-label="Telefon" maxlength="20" size="15" name="telefon" value="{{ telefon }}">
-                    <input class="form-control mr-sm-2" type="email" placeholder="Email" aria-label="Email" maxlength="45" size="35" name="email" value="{{ email }}">
+                    <input class="form-control mr-sm-2" type="text" placeholder="Telefon" aria-label="Telefon" maxlength="20" size="15" name="telefon" value="{{ telefon }}" onkeydown="return event.key != 'Enter';">
+                    <input class="form-control mr-sm-2" type="email" placeholder="Email" aria-label="Email" maxlength="45" size="35" name="email" value="{{ email }}" onkeydown="return event.key != 'Enter';">
                     </li>
                     <li>
-                    <input class="form-control mr-sm-2" type="radio" aria-label="Gast" name="status" value="gast" {% if status == "gast" %}checked{% endif %}>Gast&nbsp;&nbsp
+                    <input class="form-control mr-sm-2" type="radio" aria-label="Gast" name="status" value="gast" {% if status == "gast" or status is not defined %}checked{% endif %}>Gast&nbsp;&nbsp
                     <input class="form-control mr-sm-2" type="radio" aria-label="Band" name="status" value="band" {% if status == "band" %}checked{% endif %}>Band&nbsp;&nbsp;
                     <input class="form-control mr-sm-2" type="radio" aria-label="Crew" name="status" value="crew" {% if status == "crew" %}checked{% endif %}>Crew&nbsp;&nbsp;
                     </li>

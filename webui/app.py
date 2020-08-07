@@ -62,7 +62,8 @@ def stammdaten():
         cursor.execute(get_user_stmt, (besucher_id,))
         besucher = cursor.fetchall()
         if cursor.rowcount == 0:
-            print('Besucher {} existiert nicht.'.format(besucher_id))
+            print('Besucher ID {} existiert nicht.'.format(besucher_id))
+            return render_template('index.html', id = besucher_id)
         else:
             for b in besucher:
                 name = b[1].decode()
