@@ -4,7 +4,6 @@ from datetime import datetime
 import evdev
 from evdev import ecodes
 import mysql.connector
-import random
 
 scancodes = {
     # Scancode: ASCIICode
@@ -30,26 +29,20 @@ cursor = db.cursor(prepared=True)
 
 ID_LENGTH = 4
 
-status = 'kommt'
 
 track_user_stmt='INSERT INTO verlaufsdaten (zeitstempel, besucher_id, aktion) VALUES (%s, %s, %s)'
 check_id_stmt='SELECT zustand FROM zustandsdaten WHERE besucher_id = %s LIMIT 1'
 insert_status_stmt='INSERT INTO zustandsdaten (besucher_id, zustand) VALUES (%s, %s)'
 update_status_stmt='UPDATE zustandsdaten SET zustand = %s WHERE besucher_id = %s'
 
+STATUS_MESSAGE=('KOMMT','GEHT','RESERVIERT')
+status = 'kommt'
+
 def handle(scan):
     global status
 
-    status = random.choice(('geht','kommt'))
-
-    if scan == 'KOMMT':
-        status = 'kommt'
-        print('Register status "{}"'.format(status))
-    elif scan == 'GEHT':
-        status = 'geht'
-        print('Register status "{}"'.format(status))
-    elif scan == 'RESERVIERT':
-        status = 'reserviert'
+    if scan in STATUS_MESSAGE:
+        status = scan.lower()
         print('Register status "{}"'.format(status))
     elif len(scan) == ID_LENGTH:
         try:
