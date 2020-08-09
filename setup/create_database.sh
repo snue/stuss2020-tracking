@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS besuchertracker.stammdaten (
   plz VARCHAR(5) NULL,
   adresse2 VARCHAR(45) NULL,
   telefon VARCHAR(20) NULL,
-  email VARCHAR(45) NULL,
+  email VARCHAR(90) NULL,
   status VARCHAR(10) NULL,
   coronawarn BIGINT NULL,
   PRIMARY KEY (besucher_id));

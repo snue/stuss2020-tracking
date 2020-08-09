@@ -27,7 +27,7 @@ db = mysql.connector.connect(
 
 cursor = db.cursor(prepared=True)
 
-ID_LENGTH = 4
+ID_LENGTH = 5
 
 
 track_user_stmt='INSERT INTO verlaufsdaten (zeitstempel, besucher_id, aktion) VALUES (%s, %s, %s)'

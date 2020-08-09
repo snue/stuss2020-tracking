@@ -12,6 +12,9 @@ mutool poster -y 2 armbandA3.pdf armbandA4.pdf
 # Das Resultat sind senkrechte Barcodes
 rm armband.ps armbandA3.pdf
 
-barcode -b "KOMMT" -b "GEHT" -b "RESERVIERT" -o status.ps -t 1x3 -m 150,60
+
+seq 10001 10010 | barcode -t 2x5 -m 100,50 -o example.ps
+
+barcode -b "kommt" -b "geht" -b "reserviert" -o status.ps -t 1x3 -m 150,60
 
 echo "Fertig"
