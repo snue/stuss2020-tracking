@@ -1,80 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
+{% block content %}
+<h1>Besucherzahlen</h1>
+<table class="table table-striped">
+    <tbody>
+    <tr class="table-primary"><td>Registriert</td><td>{{ registriert }}</td></tr>
+    <tr class="table-success"><td>Anwesend</td><td>{{ anwesend }}</td></tr>
+    <tr class="table-info"><td>Reserviert</td><td>{{ reserviert }}</td></tr>
+    <tr class="table-danger"><td>Anwesend + Reserviert</td><td>{{ anwesend + reserviert }}</td></tr>
+    <tr><td>Abwesend</td><td>{{ abwesend }}</td></tr>
+    </tbody>
+</table>
+{% endblock %}
 
-<head>
-    <title>Corona Besuchertracker App</title>
+{% block morecontent %}
+<h2>Aufgeschl&uuml;sselt nach Status:</h2>
 
-    <link href="static/bootstrap.min.css" rel="stylesheet">
-    <link href="static/jumbotron.css" rel="stylesheet">
-</head>
-
-<body>
-    <div class="container">
-        <div class="header">
-        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-            <a class="navbar-brand" href="/">SaF 2020</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarsExampleDefault">
-            <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-            <a class="nav-link" href="#">Stammdaten <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-            <a class="nav-link" href="#">Verlaufsdaten</a>
-            </li>
-            <li class="nav-item">
-            <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Status</a>
-            </li>
-            </ul>
-            </div>
-        </nav>
-        <h3 class="text-muted">Corona Besuchertracker App</h3>
-        </div>
-
-        <div class="jumbotron">
-            <h1>Stammdatenverwaltung</h1>
-            <p class="lead"></p>
-            <form class="form-inline my-2 my-lg-0">
-                <ul style="list-style-type:none;">
-                    <li>
-                    <input class="form-control mr-sm-2" type="number" placeholder="ID" aria-label="ID" name="besucher_id"  maxlength="5" size="5" value="{{ id }}">
-                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit" formaction="/stammdaten" formmethod="get">laden</button>
-                    </li>
-                    <li>
-                    <p></p>
-                    <input class="form-control mr-sm-2" type="text" placeholder="Name" aria-label="Name" size="25" maxlength="45" name="name" value="{{ name }}" onkeydown="return event.key != 'Enter';">
-                    <input class="form-control mr-sm-2" type="text" placeholder="Adresse (Strasse, Hausnr.)" aria-label="Adresse 1"  maxlength="45" name="adresse1" size="25" value="{{ adresse1 }}" onkeydown="return event.key != 'Enter';">
-                    </li>
-                    <li>
-                    <input class="form-control mr-sm-2" type="text" placeholder="PLZ" aria-label="PLZ" maxlength="5" name="plz" size="5" value="{{ plz }}" onkeydown="return event.key != 'Enter';">
-                    <input class="form-control mr-sm-2" type="text" placeholder="Adresse (Ort, Land)" aria-label="Adresse 2" maxlength="45" name="adresse2" size="45" value="{{ adresse2 }}" onkeydown="return event.key != 'Enter';">
-                    </li>
-                    <li>
-                    <input class="form-control mr-sm-2" type="text" placeholder="Telefon" aria-label="Telefon" maxlength="20" size="15" name="telefon" value="{{ telefon }}" onkeydown="return event.key != 'Enter';">
-                    <input class="form-control mr-sm-2" type="email" placeholder="Email" aria-label="Email" maxlength="45" size="35" name="email" value="{{ email }}" onkeydown="return event.key != 'Enter';">
-                    </li>
-                    <li>
-                    <input class="form-control mr-sm-2" type="radio" aria-label="Gast" name="status" value="gast" {% if status == "gast" or status is not defined %}checked{% endif %}>Gast&nbsp;&nbsp
-                    <input class="form-control mr-sm-2" type="radio" aria-label="Band" name="status" value="band" {% if status == "band" %}checked{% endif %}>Band&nbsp;&nbsp;
-                    <input class="form-control mr-sm-2" type="radio" aria-label="Crew" name="status" value="crew" {% if status == "crew" %}checked{% endif %}>Crew&nbsp;&nbsp;
-                    </li>
-                    <li>
-                        <input class="form-control mr-sm-2" type="checkbox" aria-label="Corona Warn App" name="coronawarn" value="1" {% if coronawarn == 1 %}checked{% endif %}> Corona Warn App?
-                    </li>
-                    <li>
-                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit" formaction="/stammdaten" formmethod="post">speichern</button>
-                    </li>
-                    <ul>
-            </form>
-        </div>
-
-        <footer class="footer">
-            <p>&copy; Stuss am Fluss 2020</p>
-        </footer>
-    </div>
-</body>
-
-</html>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Status</th>
+            <th>Letzte Aktion</th>
+            <th>Anzahl</th>
+        </tr>
+    </thead>
+    <tbody>
+{% for anzahl, zustand, status in counts %}
+    <tr>
+    <td>{{ status.decode() }}</td>
+    <td>{{ zustand.decode() }}</td>
+    <td>{{ anzahl }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

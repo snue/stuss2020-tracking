@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Corona Besuchertracker App</title>
+
+    <link href="static/bootstrap.min.css" rel="stylesheet">
+    <link href="static/jumbotron.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+            <a class="navbar-brand" href="/">SaF 2020</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+            <ul class="navbar-nav mr-auto">
+            <li class="nav-item {% block stammdaten %}{% endblock %}">
+            <a class="nav-link" href="/stammdaten">Stammdaten</a>
+            </li>
+            <li class="nav-item {% block verlaufsdaten %}{% endblock %}">
+            <a class="nav-link" href="/verlaufsdaten">Verlaufsdaten</a>
+            </li>
+            </ul>
+            </div>
+        </nav>
+        <h3 class="text-muted">Corona Besuchertracker App</h3>
+        </div>
+
+        <div class="jumbotron">
+            {% block content %}{% endblock %}
+        </div>
+        {% block morecontent %}{% endblock %}
+
+        <footer class="footer">
+            <p>&copy; Stuss am Fluss 2020</p>
+        </footer>
+    </div>
+</body>
+
+</html>

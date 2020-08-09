@@ -14,19 +14,42 @@ db = mysql.connector.connect(
 cursor = db.cursor(prepared=True)
 
 get_user_stmt = 'SELECT * FROM stammdaten WHERE besucher_id = %s LIMIT 1'
+
 new_user_stmt = '''
-                INSERT INTO stammdaten
-                  (besucher_id, name, adresse1, plz, adresse2,
-                   telefon, email, status, coronawarn)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                '''
+INSERT INTO stammdaten
+    (besucher_id, name, adresse1, plz, adresse2,
+     telefon, email, status, coronawarn)
+VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+'''
+
 update_user_stmt = '''
-                UPDATE stammdaten
-                SET name = %s, adresse1 = %s, plz = %s, adresse2 = %s,
-                    telefon = %s, email = %s, status = %s,
-                    coronawarn = %s
-                WHERE besucher_id = %s
-                '''
+UPDATE stammdaten
+SET name = %s, adresse1 = %s, plz = %s, adresse2 = %s,
+    telefon = %s, email = %s, status = %s,
+    coronawarn = %s
+WHERE besucher_id = %s
+'''
+
+count_user_status_stmt='''
+SELECT
+  COUNT(DISTINCT(b.besucher_id)) AS anzahl
+  ,IFNULL(z.zustand,"nicht gesehen") AS zustand
+  ,IFNULL(s.status,"nicht registriert") AS status
+FROM
+(SELECT DISTINCT(besucher_id)
+ FROM zustandsdaten
+ UNION
+ SELECT DISTINCT(besucher_id)
+ FROM stammdaten) AS b
+LEFT JOIN zustandsdaten AS z
+ON z.besucher_id = b.besucher_id
+LEFT JOIN
+  (SELECT besucher_id, status FROM stammdaten) AS s
+ON s.besucher_id = b.besucher_id
+GROUP BY z.zustand, s.status
+ORDER BY s.status, z.zustand
+'''
+
 
 @app.route('/stammdaten',methods=['POST','GET'])
 def stammdaten():
@@ -63,7 +86,9 @@ def stammdaten():
         besucher = cursor.fetchall()
         if cursor.rowcount == 0:
             print('Besucher ID {} existiert nicht.'.format(besucher_id))
-            return render_template('index.html', id = besucher_id)
+            if besucher_id == 0:
+                besucher_id = ''
+            return render_template('stammdaten.html', id = besucher_id)
         else:
             for b in besucher:
                 name = b[1].decode()
@@ -91,14 +116,38 @@ def stammdaten():
                 """.format(besucher_id, name, adresse1, plz, adresse2, telefon,
                            email, status, coronawarn))
 
-    return render_template('index.html',id = besucher_id, name = name,
-                           adresse1 = adresse1, plz = plz, adresse2 = adresse2,
-                           telefon=telefon, email = email, status = status,
+    return render_template('stammdaten.html',
+                           id = besucher_id,
+                           name = name,
+                           adresse1 = adresse1,
+                           plz = plz,
+                           adresse2 = adresse2,
+                           telefon=telefon,
+                           email = email,
+                           status = status,
                            coronawarn = coronawarn)
+
+
+@app.route('/verlaufsdaten',methods=['GET'])
+def verlaufsdaten():
+    return render_template('verlaufsdaten.html')
+
 
 @app.route('/',methods=['GET'])
 def main():
-    return render_template('index.html')
+    cursor.execute(count_user_status_stmt)
+    counts = cursor.fetchall()
+    anwesend = sum((0,anzahl)[status.decode() == 'kommt'] for anzahl, status, zustand in counts)
+    abwesend = sum((0,anzahl)[status.decode() == 'geht'] for anzahl, status, zustand in counts)
+    reserviert = sum((0,anzahl)[status.decode() == 'reserviert'] for anzahl, status, zustand in counts)
+    registriert = sum((0,anzahl)[status.decode() != 'nicht registriert'] for anzahl, status, zustand in counts)
+
+    return render_template('index.html',
+                           counts = counts,
+                           anwesend = anwesend,
+                           reserviert = reserviert,
+                           abwesend = abwesend,
+                           registriert = registriert)
 
 if __name__ == '__main__':
     app.run()
