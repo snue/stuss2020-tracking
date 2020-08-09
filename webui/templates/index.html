@@ -4,10 +4,11 @@
 <table class="table table-striped">
     <tbody>
     <tr class="table-primary"><td>Registriert</td><td>{{ registriert }}</td></tr>
-    <tr class="table-success"><td>Anwesend</td><td>{{ anwesend }}</td></tr>
-    <tr class="table-info"><td>Reserviert</td><td>{{ reserviert }}</td></tr>
-    <tr class="table-danger"><td>Anwesend + Reserviert</td><td>{{ anwesend + reserviert }}</td></tr>
-    <tr><td>Abwesend</td><td>{{ abwesend }}</td></tr>
+    <tr class="table-secondary"><td>Aktuell auf dem Gel&auml;nde (inkl. Crew / Bands)</td><td>{{ anwesend }}</td></tr>
+    <tr class="table-{% if anwesend_gast < 800 %}success{% elif anwesend_gast < 1000 %}warning{% else %}danger{% endif %}"><td>Anzahl G&auml;ste / Maximum</td><td>{{ anwesend_gast }} / {{ 1000 - reserviert }}</td></tr>
+    <tr class="table-info"><td>Reservierungen</td><td>{{ reserviert }}</td></tr>
+    <tr class="table-{% if anwesend_gast + reserviert < 900 %}success{% elif anwesend_gast + reserviert < 1000 %}warning{% else %}danger{% endif %}"><td>Obergrenze (G&auml;ste + Reservierungen) / Maximum</td><td>{{ anwesend_gast + reserviert }} / 1000</td></tr>
+    <tr><td>Abwesend (gegangen oder reserviert)</td><td>{{ abwesend }}</td></tr>
     </tbody>
 </table>
 {% endblock %}

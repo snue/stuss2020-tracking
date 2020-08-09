@@ -137,17 +137,19 @@ def verlaufsdaten():
 def main():
     cursor.execute(count_user_status_stmt)
     counts = cursor.fetchall()
-    anwesend = sum((0,anzahl)[status.decode() == 'kommt'] for anzahl, status, zustand in counts)
-    abwesend = sum((0,anzahl)[status.decode() == 'geht'] for anzahl, status, zustand in counts)
-    reserviert = sum((0,anzahl)[status.decode() == 'reserviert'] for anzahl, status, zustand in counts)
-    registriert = sum((0,anzahl)[status.decode() != 'nicht registriert'] for anzahl, status, zustand in counts)
+    anwesend = sum((0,anzahl)[zustand.decode() == 'kommt'] for anzahl, zustand, status in counts)
+    anwesend_gast = sum((0,anzahl)[status.decode() == 'gast' and zustand.decode() == 'kommt'] for anzahl, zustand, status in counts)
+    abwesend = sum((0,anzahl)[zustand.decode() == 'geht' or zustand.decode() == 'reserviert'] for anzahl, zustand, status in counts)
+    reserviert = sum((0,anzahl)[zustand.decode() == 'reserviert' and (status.decode() == 'gast' or status.decode() == 'nicht registriert') ] for anzahl, zustand, status in counts)
+    registriert = sum((0,anzahl)[status.decode() != 'nicht registriert'] for anzahl, zustand, status in counts)
 
     return render_template('index.html',
                            counts = counts,
                            anwesend = anwesend,
                            reserviert = reserviert,
                            abwesend = abwesend,
-                           registriert = registriert)
+                           registriert = registriert,
+                           anwesend_gast = anwesend_gast)
 
 if __name__ == '__main__':
     app.run()
