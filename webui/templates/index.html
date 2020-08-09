@@ -4,11 +4,31 @@
 <table class="table table-striped">
     <tbody>
     <tr class="table-primary"><td>Registriert</td><td>{{ registriert }}</td></tr>
-    <tr class="table-secondary"><td>Aktuell auf dem Gel&auml;nde (inkl. Crew / Bands)</td><td>{{ anwesend }}</td></tr>
-    <tr class="table-{% if anwesend_gast < 800 %}success{% elif anwesend_gast < 1000 %}warning{% else %}danger{% endif %}"><td>Anzahl G&auml;ste / Maximum</td><td>{{ anwesend_gast }} / {{ 1000 - reserviert }}</td></tr>
-    <tr class="table-info"><td>Reservierungen</td><td>{{ reserviert }}</td></tr>
-    <tr class="table-{% if anwesend_gast + reserviert < 900 %}success{% elif anwesend_gast + reserviert < 1000 %}warning{% else %}danger{% endif %}"><td>Obergrenze (G&auml;ste + Reservierungen) / Maximum</td><td>{{ anwesend_gast + reserviert }} / 1000</td></tr>
-    <tr><td>Abwesend (gegangen oder reserviert)</td><td>{{ abwesend }}</td></tr>
+    <tr class="table-{% if anwesend < ((gast_max + crew_band_max) * 0.8) %}success{% elif anwesend < (gast_max + crew_band_max) %}warning{% else %}danger{% endif %}"><td>Aktuell auf dem Gel&auml;nde (davon Unbekannte) / Maximum</td><td>{{ anwesend }} ({{ anwesend - anwesend_gast - anwesend_crew_band }}) / {{ gast_max + crew_band_max }}</td></tr>
+    <tr class="table-info"><td>Reservierungen</td><td>{{ reserviert_gast + reserviert_crew_band }}</td></tr>
+    <tr class="table-default"><td>Abwesend inkl. Reservierungen (davon Unbekannte)</td><td>{{ abwesend }} ({{ abwesend - abwesend_gast - abwesend_crew_band }})</td></tr>
+    </tbody>
+</table>
+<h2>G&auml;ste</h2>
+<table class="table table-striped">
+    <tbody>
+        <tr class="table-{% if anwesend_gast < (gast_max * 0.8) %}success{% elif anwesend_gast < gast_max %}warning{% else %}danger{% endif %}">
+            <td>Anwesende G&auml;ste / Maximum</td><td>{{ anwesend_gast }} / {{ gast_max - reserviert_gast }}</td></tr>
+    <tr class="table-info"><td>Reservierungen</td><td>{{ reserviert_gast }}</td></tr>
+    <tr class="table-{% if anwesend_gast + reserviert_gast < (gast_max * 0.8) %}success{% elif anwesend_gast + reserviert_gast < gast_max %}warning{% else %}danger{% endif %}">
+        <td>Obergrenze (G&auml;ste + Reservierungen) / Maximum</td><td>{{ anwesend_gast + reserviert_gast }} / {{ gast_max }}</td></tr>
+    <tr><td>Abwesend inkl. Reservierungen</td><td>{{ abwesend_gast }}</td></tr>
+    </tbody>
+</table>
+<h2>Crew &amp; Bands</h2>
+<table class="table table-striped">
+    <tbody>
+        <tr class="table-{% if anwesend_crew_band < (crew_band_max * 0.8) %}success{% elif anwesend_gast < crew_band_max %}warning{% else %}danger{% endif %}">
+            <td>Anwesende Crew &amp; Bandmitglieder / Maximum</td><td>{{ anwesend_crew_band }} / {{ crew_band_max - reserviert_crew_band }}</td></tr>
+    <tr class="table-info"><td>Reservierungen</td><td>{{ reserviert_crew_band }}</td></tr>
+    <tr class="table-{% if anwesend_crew_band + reserviert_crew_band < (crew_band_max * 0.8) %}success{% elif anwesend_crew_band + reserviert_crew_band < crew_band_max %}warning{% else %}danger{% endif %}">
+        <td>Obergrenze (Anwesende + Reservierungen) / Maximum</td><td>{{ anwesend_crew_band + reserviert_crew_band }} / {{ crew_band_max }}</td></tr>
+    <tr><td>Abwesend inkl. Reservierungen</td><td>{{ abwesend_crew_band }}</td></tr>
     </tbody>
 </table>
 {% endblock %}
