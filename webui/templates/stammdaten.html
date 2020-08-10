@@ -31,6 +31,11 @@
 <input class="form-control mr-sm-2" type="checkbox" aria-label="Corona Warn App" name="coronawarn" value="1" {% if coronawarn == 1 %}checked{% endif %}> Corona Warn App?
 </li>
 <li>
+<input class="form-control mr-sm-2" type="radio" aria-label="kommt" name="zustand" value="kommt" {% if zustand == "kommt" %}checked{% endif %}>Anwesend&nbsp;&nbsp
+<input class="form-control mr-sm-2" type="radio" aria-label="geht" name="zustand" value="geht" {% if zustand == "geht" %}checked{% endif %}>Abwesend&nbsp;&nbsp;
+<input class="form-control mr-sm-2" type="radio" aria-label="reserviert" name="zustand" value="reserviert" {% if zustand == "reserviert" or zustand is not defined %}checked{% endif %}>Reservierung&nbsp;&nbsp;
+</li>
+<li>
 <button class="btn btn-outline-success my-2 my-sm-0" type="submit" formaction="/stammdaten" formmethod="post">speichern</button>
 </li>
 <ul>

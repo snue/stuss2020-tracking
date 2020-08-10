@@ -13,7 +13,17 @@ db = mysql.connector.connect(
 
 cursor = db.cursor(prepared=True)
 
-get_user_stmt = 'SELECT * FROM stammdaten WHERE besucher_id = %s LIMIT 1'
+get_user_stmt = '''
+SELECT * FROM stammdaten s
+LEFT JOIN zustandsdaten z
+ON s.besucher_id = z.besucher_id
+WHERE s.besucher_id = %s
+LIMIT 1
+'''
+
+insert_status_stmt='INSERT INTO zustandsdaten (besucher_id, zustand) VALUES (%s, %s)'
+update_status_stmt='UPDATE zustandsdaten SET zustand = %s WHERE besucher_id = %s'
+check_id_stmt='SELECT zustand FROM zustandsdaten WHERE besucher_id = %s LIMIT 1'
 
 new_user_stmt = '''
 INSERT INTO stammdaten
@@ -50,11 +60,12 @@ GROUP BY z.zustand, s.status
 ORDER BY s.status, z.zustand
 '''
 
-GAST_MAX = 600
-CREW_BAND_MAX = 200
+GAST_MAX = 700
+CREW_BAND_MAX = 100
 
 @app.route('/stammdaten',methods=['POST','GET'])
 def stammdaten():
+
 
     if request.method == 'POST':
         # Update entry from form
@@ -70,6 +81,7 @@ def stammdaten():
         email = request.form.get('email')
         status = request.form.get('status')
         coronawarn = request.form.get('coronawarn', default=0, type=int)
+        zustand = request.form.get('zustand')
 
         if cursor.rowcount == 0:
             print('Adding new user: {}'.format(besucher_id))
@@ -81,6 +93,14 @@ def stammdaten():
             cursor.execute(update_user_stmt, (name, adresse1, plz, adresse2,
                                               telefon,email,status,coronawarn,
                                               besucher_id))
+
+        cursor.execute(check_id_stmt, (besucher_id,))
+        cursor.fetchall()
+        if cursor.rowcount == 0:
+            cursor.execute(insert_status_stmt, (besucher_id, zustand,))
+        else:
+            cursor.execute(update_status_stmt, (zustand, besucher_id,))
+
         db.commit()
     else:
         besucher_id = request.args.get('besucher_id', default=0, type=int)
@@ -101,6 +121,7 @@ def stammdaten():
                 email = b[6].decode()
                 status = b[7].decode()
                 coronawarn = b[8]
+                zustand = (None, b[10].decode())[ len(b) > 10 ]
 
                 if besucher_id != b[0]:
                     print('Warning: unexpected ID {} in query for {}'.format(
@@ -115,8 +136,9 @@ def stammdaten():
                 Email:   {}
                 Status:  {}
                 CoronaWarn: {}
+                Zustand: {}
                 """.format(besucher_id, name, adresse1, plz, adresse2, telefon,
-                           email, status, coronawarn))
+                           email, status, coronawarn, zustand))
 
     return render_template('stammdaten.html',
                            id = besucher_id,
@@ -127,7 +149,8 @@ def stammdaten():
                            telefon=telefon,
                            email = email,
                            status = status,
-                           coronawarn = coronawarn)
+                           coronawarn = coronawarn,
+                           zustand = zustand)
 
 
 @app.route('/verlaufsdaten',methods=['GET'])
