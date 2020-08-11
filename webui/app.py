@@ -66,7 +66,6 @@ CREW_BAND_MAX = 100
 @app.route('/stammdaten',methods=['POST','GET'])
 def stammdaten():
 
-
     if request.method == 'POST':
         # Update entry from form
         besucher_id = request.form.get('besucher_id', default=0, type=int)
@@ -113,15 +112,15 @@ def stammdaten():
             return render_template('stammdaten.html', id = besucher_id)
         else:
             for b in besucher:
-                name = b[1].decode()
-                adresse1 = b[2].decode()
-                plz = b[3].decode()
-                adresse2 = b[4].decode()
-                telefon = b[5].decode()
-                email = b[6].decode()
-                status = b[7].decode()
+                name = b[1]
+                adresse1 = b[2]
+                plz = b[3]
+                adresse2 = b[4]
+                telefon = b[5]
+                email = b[6]
+                status = b[7]
                 coronawarn = b[8]
-                zustand = (None, b[10].decode())[ len(b) > 10 ]
+                zustand = (None, b[10])[ len(b) > 10 ]
 
                 if besucher_id != b[0]:
                     print('Warning: unexpected ID {} in query for {}'.format(
@@ -162,35 +161,35 @@ def verlaufsdaten():
 def main():
     cursor.execute(count_user_status_stmt)
     counts = cursor.fetchall()
-    anwesend = sum((0,anzahl)[zustand.decode() == 'kommt' ] for anzahl, zustand, status in counts)
-    anwesend_gast = sum((0,anzahl)[status.decode() == 'gast' and
-                                   zustand.decode() == 'kommt'] for
+    anwesend = sum((0,anzahl)[zustand == 'kommt' ] for anzahl, zustand, status in counts)
+    anwesend_gast = sum((0,anzahl)[status == 'gast' and
+                                   zustand == 'kommt'] for
                         anzahl, zustand, status in counts)
-    anwesend_crew_band = sum((0,anzahl)[(status.decode() == 'crew' or
-                                         status.decode() == 'band') and
-                                   zustand.decode() == 'kommt'] for
+    anwesend_crew_band = sum((0,anzahl)[(status == 'crew' or
+                                         status == 'band') and
+                                   zustand == 'kommt'] for
                         anzahl, zustand, status in counts)
-    abwesend = sum((0,anzahl)[zustand.decode() == 'geht' or
-                              zustand.decode() == 'reserviert'] for
+    abwesend = sum((0,anzahl)[zustand == 'geht' or
+                              zustand == 'reserviert'] for
                    anzahl, zustand, status in counts)
-    abwesend_gast = sum((0,anzahl)[status.decode() == 'gast' and
-                                   (zustand.decode() == 'geht' or
-                                    zustand.decode() == 'reserviert')] for
+    abwesend_gast = sum((0,anzahl)[status == 'gast' and
+                                   (zustand == 'geht' or
+                                    zustand == 'reserviert')] for
                         anzahl, zustand, status in counts)
-    abwesend_crew_band = sum((0,anzahl)[((status.decode() == 'crew' or
-                                         status.decode() == 'band') and
-                                   (zustand.decode() == 'geht' or
-                                    zustand.decode() == 'reserviert'))] for
+    abwesend_crew_band = sum((0,anzahl)[((status == 'crew' or
+                                         status == 'band') and
+                                   (zustand == 'geht' or
+                                    zustand == 'reserviert'))] for
                         anzahl, zustand, status in counts)
-    reserviert_gast = sum((0,anzahl)[zustand.decode() == 'reserviert' and
-                                (status.decode() == 'gast' or
-                                 status.decode() == 'nicht registriert') ] for
+    reserviert_gast = sum((0,anzahl)[zustand == 'reserviert' and
+                                (status == 'gast' or
+                                 status == 'nicht registriert') ] for
                      anzahl, zustand, status in counts)
-    reserviert_crew_band = sum((0,anzahl)[zustand.decode() == 'reserviert' and
-                                (status.decode() == 'gast' or
-                                 status.decode() == 'nicht registriert') ] for
+    reserviert_crew_band = sum((0,anzahl)[zustand == 'reserviert' and
+                                (status == 'gast' or
+                                 status == 'nicht registriert') ] for
                      anzahl, zustand, status in counts)
-    registriert = sum((0,anzahl)[status.decode() != 'nicht registriert'] for
+    registriert = sum((0,anzahl)[status != 'nicht registriert'] for
                       anzahl, zustand, status in counts)
 
     return render_template('index.html',
