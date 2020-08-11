@@ -4,6 +4,7 @@ from datetime import datetime
 import evdev
 from evdev import ecodes
 import mysql.connector
+import sys
 
 scancodes = {
     # Scancode: ASCIICode
@@ -15,9 +16,8 @@ scancodes = {
     50: u'M', 51: u',', 52: u'.', 53: u'/', 54: u'RSHFT', 56: u'LALT', 57: u' ', 100: u'RALT'
 }
 
-scanner = evdev.InputDevice('/dev/input/by-id/usb-BarCode_WPM_USB-event-kbd')
+scanner = evdev.InputDevice(sys.argv[1])
 scanner.grab()
-
 db = mysql.connector.connect(
     host="localhost",
     user="root",
