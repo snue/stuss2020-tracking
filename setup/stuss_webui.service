@@ -1,0 +1,18 @@
+# Place this file in /etc/systemd/system/
+# Then call:
+# systemctl daemon-reload
+# systemctl enable stuss_webui.service
+# systemctl start stuss_webui.service
+
+[Unit]
+Description=Flask Service for Visitor Tracking
+After=mysql.service
+
+[Service]
+User=pi
+Group=input
+ExecStart=/home/pi/stuss2020-tracking/webui/app.py
+
+[Install]
+WantedBy=multi-user.target
+
