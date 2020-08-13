@@ -1,5 +1,31 @@
 {% extends "base.html" %}
 {% block verlaufsdaten %}active{% endblock %}
 {% block content %}
-
+<h1>Verlaufsdaten</h1>
+<form class="form-inline my-2 my-lg-0">
+<input class="form-control mr-sm-2" type="number" placeholder="ID" aria-label="ID" name="besucher_id" maxlength="5" size="5" value="{{ id }}">
+<button class="btn btn-outline-success my-2 my-sm-0" type="submit" formaction="/verlaufsdaten" formmethod="get">filtern</button>
+</form>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Zeitstempel</th>
+            <th>ID</th>
+            <th>Alias</th>
+            <th>Status</th>
+            <th>Aktion</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for zeitstempel, besucher_id, alias, status, aktion in verlauf %}
+    <tr>
+    <td>{{ zeitstempel }}</td>
+    <td>{{ besucher_id }}</td>
+    <td>{{ alias }}</td>
+    <td>{{ status }}</td>
+    <td>{{ aktion }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
 {% endblock %}

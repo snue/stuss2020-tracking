@@ -62,6 +62,21 @@ GROUP BY z.zustand, s.status
 ORDER BY s.status, z.zustand
 '''
 
+get_tracking_data_stmt = '''
+SELECT
+zeitstempel, v.besucher_id,
+IFNULL(soundex(name), "unbekannt") as alias,
+IFNULL(status, "unbekannt") as status,
+aktion
+FROM verlaufsdaten v
+LEFT JOIN
+(SELECT name, status, besucher_id FROM stammdaten) as s
+on v.besucher_id = s.besucher_id
+WHERE
+v.besucher_id = IFNULL(%s,v.besucher_id)
+ORDER BY zeitstempel DESC
+'''
+
 GAST_MAX = 700
 CREW_BAND_MAX = 100
 
@@ -158,7 +173,13 @@ def stammdaten():
 
 @app.route('/verlaufsdaten',methods=['GET'])
 def verlaufsdaten():
-    return render_template('verlaufsdaten.html')
+    besucher_id = request.args.get('besucher_id')
+    besucher_id = (besucher_id, None)[besucher_id == '']
+    cursor.execute(get_tracking_data_stmt, (besucher_id,))
+    verlauf = cursor.fetchall()
+    return render_template('verlaufsdaten.html',
+                           id = besucher_id,
+                           verlauf = verlauf)
 
 
 @app.route('/',methods=['GET'])
