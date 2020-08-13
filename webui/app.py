@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import mysql.connector
+from datetime import datetime
 
 from flask import Flask, render_template, request, send_from_directory
 app = Flask(__name__)
@@ -21,9 +22,10 @@ WHERE s.besucher_id = %s
 LIMIT 1
 '''
 
-insert_status_stmt='INSERT INTO zustandsdaten (besucher_id, zustand) VALUES (%s, %s)'
-update_status_stmt='UPDATE zustandsdaten SET zustand = %s WHERE besucher_id = %s'
-check_id_stmt='SELECT zustand FROM zustandsdaten WHERE besucher_id = %s LIMIT 1'
+insert_status_stmt = 'INSERT INTO zustandsdaten (besucher_id, zustand) VALUES (%s, %s)'
+update_status_stmt = 'UPDATE zustandsdaten SET zustand = %s WHERE besucher_id = %s'
+check_id_stmt = 'SELECT zustand FROM zustandsdaten WHERE besucher_id = %s LIMIT 1'
+track_user_stmt = 'INSERT INTO verlaufsdaten (zeitstempel, besucher_id, aktion) VALUES (%s, %s, %s)'
 
 new_user_stmt = '''
 INSERT INTO stammdaten
@@ -40,7 +42,7 @@ SET name = %s, adresse1 = %s, plz = %s, adresse2 = %s,
 WHERE besucher_id = %s
 '''
 
-count_user_status_stmt='''
+count_user_status_stmt = '''
 SELECT
   COUNT(DISTINCT(b.besucher_id)) AS anzahl
   ,IFNULL(z.zustand,"nicht gesehen") AS zustand
@@ -93,6 +95,8 @@ def stammdaten():
                                               telefon,email,status,coronawarn,
                                               besucher_id))
 
+        now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        cursor.execute(track_user_stmt, (now, besucher_id, zustand))
         cursor.execute(check_id_stmt, (besucher_id,))
         cursor.fetchall()
         if cursor.rowcount == 0:
