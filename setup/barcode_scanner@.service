@@ -1,0 +1,11 @@
+# Place this file in /etc/systemd/system/
+# Then call 'sudo systemctl daemon-reload'
+
+[Unit]
+Description=Barcode Scanner Entry/Exit service
+After=mysql.service
+
+[Service]
+User=pi
+Group=input
+ExecStart=/home/pi/stuss2020-tracking/scanner/scanner.py %i

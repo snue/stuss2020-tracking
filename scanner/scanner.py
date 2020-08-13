@@ -16,7 +16,7 @@ scancodes = {
     50: u'M', 51: u',', 52: u'.', 53: u'/', 54: u'RSHFT', 56: u'LALT', 57: u' ', 100: u'RALT'
 }
 
-scanner = evdev.InputDevice(sys.argv[1])
+scanner = evdev.InputDevice('/dev/input/{}'.format(sys.argv[1]))
 scanner.grab()
 db = mysql.connector.connect(
     host="localhost",

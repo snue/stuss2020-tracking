@@ -1,0 +1,7 @@
+# Place this file in /etc/ude/rules.d/
+# Then call 'sudo udevadm control --reload'
+#
+# It listens for the addition of /dev/input/event* devices
+# with Vendor/Product ID 0416:c141 (1D Barcode Scanner HID keyboards)
+# These are tagged so that systemd starts a service script for each.
+ACTION=="add", KERNEL=="event*", ATTRS{idVendor}=="0416", ATTRS{idProduct}=="c141", TAG+="systemd", ENV{SYSTEMD_WANTS}="barcode_scanner@%k.service"
