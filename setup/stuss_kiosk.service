@@ -1,0 +1,23 @@
+# Place this file in /etc/systemd/system/
+# Then call:
+# systemctl daemon-reload
+# systemctl enable stuss_webui.service
+# systemctl start stuss_webui.service
+
+[Unit]
+Description=Chromium Browser Kiosk Mode
+Wants=graphical.target
+After=graphical.target stuss_webui.service
+
+[Service]
+Environment=DISPLAY=:0.0
+Environment=XAUTHORITY=/home/pi/.Xauthority
+Type=simple
+User=pi
+Group=pi
+ExecStart=/home/pi/stuss2020-tracking/setup/kiosk.sh
+Restart=on-abort
+
+[Install]
+WantedBy=graphical.target
+
