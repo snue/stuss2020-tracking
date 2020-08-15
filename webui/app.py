@@ -113,8 +113,8 @@ def stammdaten():
         now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         cursor.execute(track_user_stmt, (now, besucher_id, zustand))
         cursor.execute(check_id_stmt, (besucher_id,))
-        cursor.fetchall()
-        if cursor.rowcount == 0:
+        z = cursor.fetchall()
+        if len(z) == 0:
             cursor.execute(insert_status_stmt, (besucher_id, zustand,))
         else:
             cursor.execute(update_status_stmt, (zustand, besucher_id,))
@@ -124,11 +124,19 @@ def stammdaten():
         besucher_id = request.args.get('besucher_id', default=0, type=int)
         cursor.execute(get_user_stmt, (besucher_id,))
         besucher = cursor.fetchall()
-        if cursor.rowcount == 0:
+        cursor.execute(check_id_stmt, (besucher_id,))
+        z = cursor.fetchall()
+        if len(z):
+            zustand = z[0][0]
+        else:
+            zustand = 'reserviert'
+
+        if len(besucher) == 0:
             print('Besucher ID {} existiert nicht.'.format(besucher_id))
             if besucher_id == 0:
                 besucher_id = ''
-            return render_template('stammdaten.html', id = besucher_id)
+            return render_template('stammdaten.html', id = besucher_id,
+                                   zustand = zustand)
         else:
             for b in besucher:
                 name = b[1]
@@ -139,7 +147,7 @@ def stammdaten():
                 email = b[6]
                 status = b[7]
                 coronawarn = b[8]
-                zustand = (None, b[10])[ len(b) > 10 ]
+                zustand = ('reserviert', b[10])[ len(b) > 10 ]
 
                 if besucher_id != b[0]:
                     print('Warning: unexpected ID {} in query for {}'.format(
