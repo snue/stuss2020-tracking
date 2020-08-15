@@ -83,6 +83,9 @@ CREW_BAND_MAX = 100
 @app.route('/stammdaten',methods=['POST','GET'])
 def stammdaten():
 
+    message=''
+    lvl='info'
+
     if request.method == 'POST':
         # Update entry from form
         besucher_id = request.form.get('besucher_id', default=0, type=int)
@@ -99,16 +102,19 @@ def stammdaten():
         coronawarn = request.form.get('coronawarn', default=0, type=int)
         zustand = request.form.get('zustand')
 
-        if cursor.rowcount == 0:
+        if len(besucher) == 0:
+            message = 'Neuer Besucher mit ID {} hinzugef&uuml;gt.'.format(besucher_id)
             print('Adding new user: {}'.format(besucher_id))
             cursor.execute(new_user_stmt, (besucher_id,
                                            name, adresse1, plz, adresse2,
                                            telefon,email,status,coronawarn))
         else:
+            message = 'Besucher mit ID {} aktualisiert.'.format(besucher_id)
             print('Updating user {}'.format(besucher_id))
             cursor.execute(update_user_stmt, (name, adresse1, plz, adresse2,
                                               telefon,email,status,coronawarn,
                                               besucher_id))
+        lvl = 'success'
 
         now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         cursor.execute(track_user_stmt, (now, besucher_id, zustand))
@@ -132,11 +138,14 @@ def stammdaten():
             zustand = 'reserviert'
 
         if len(besucher) == 0:
-            print('Besucher ID {} existiert nicht.'.format(besucher_id))
+            message = 'Besucher mit ID {} existiert nicht.'.format(besucher_id)
+            lvl = 'warning'
+            print(message)
             if besucher_id == 0:
                 besucher_id = ''
+                message = ''
             return render_template('stammdaten.html', id = besucher_id,
-                                   zustand = zustand)
+                                   zustand = zustand, message = message, lvl = lvl)
         else:
             for b in besucher:
                 name = b[1]
@@ -166,6 +175,8 @@ def stammdaten():
                 """.format(besucher_id, name, adresse1, plz, adresse2, telefon,
                            email, status, coronawarn, zustand))
 
+            message = 'Besucher mit ID {} geladen.'.format(besucher_id)
+
     return render_template('stammdaten.html',
                            id = besucher_id,
                            name = name,
@@ -176,7 +187,9 @@ def stammdaten():
                            email = email,
                            status = status,
                            coronawarn = coronawarn,
-                           zustand = zustand)
+                           zustand = zustand,
+                           message = message,
+                           lvl = lvl)
 
 
 @app.route('/verlaufsdaten',methods=['GET'])
