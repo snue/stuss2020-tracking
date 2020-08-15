@@ -1,6 +1,9 @@
 {%extends "base.html" %}
 {% block stammdaten %}active{% endblock %}
 {%block content %}
+{% if message is defined and message != '' %}
+<p>{{ message }}</p>
+{% endif %}
 <h1>Stammdatenverwaltung</h1>
 <p class="lead"></p>
 <form class="form-inline my-2 my-lg-0">
