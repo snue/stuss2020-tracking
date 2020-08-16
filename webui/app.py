@@ -86,8 +86,13 @@ v.besucher_id = IFNULL(%s,v.besucher_id)
 ORDER BY zeitstempel DESC
 '''
 
+get_district_stmt = "SELECT landkreis FROM landkreise WHERE plz = %s"
+
 GAST_MAX = 700
 CREW_BAND_MAX = 100
+
+# list of banned districts. get the strings from the csv in the setup.
+BANNED_DISTRICTS = ['Landkreis Dingolfing-Landau']
 
 @app.route('/stammdaten',methods=['POST','GET'])
 def stammdaten():
@@ -113,27 +118,42 @@ def stammdaten():
         zustand = request.form.get('zustand')
 
         if len(besucher) == 0:
-            message = 'Neuer Besucher mit ID {} hinzugef&uuml;gt.'.format(besucher_id)
-            print('Adding new user: {}'.format(besucher_id))
-            cursor.execute(new_user_stmt, (besucher_id,
-                                           name, adresse1, plz, adresse2,
-                                           telefon,email,status,coronawarn))
+            # check district
+            cursor.execute(get_district_stmt, (plz,))
+            landkreis = cursor.fetchall()
+            if len(landkreis) == 0:
+                lvl = 'warning'
+                print('PLZ kann keinem Landkreis zugeordnet werden.')
+            else:
+                for lk in landkreis:
+                    if lk[0] in BANNED_DISTRICTS:
+                        lvl = 'warning'
+                        message = 'Besucher kommt aus gesperrtem Landkreis ({}).'.format(lk[0])
+            if lvl != 'warning':
+                # add new guest
+                message = 'Neuer Besucher mit ID {} hinzugef&uuml;gt.'.format(besucher_id)
+                print('Adding new user: {}'.format(besucher_id))
+                cursor.execute(new_user_stmt, (besucher_id,
+                                               name, adresse1, plz, adresse2,
+                                               telefon,email,status,coronawarn))
         else:
             message = 'Besucher mit ID {} aktualisiert.'.format(besucher_id)
             print('Updating user {}'.format(besucher_id))
             cursor.execute(update_user_stmt, (name, adresse1, plz, adresse2,
                                               telefon,email,status,coronawarn,
                                               besucher_id))
-        lvl = 'success'
 
-        now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-        cursor.execute(track_user_stmt, (now, besucher_id, zustand))
-        cursor.execute(check_id_stmt, (besucher_id,))
-        z = cursor.fetchall()
-        if len(z) == 0:
-            cursor.execute(insert_status_stmt, (besucher_id, zustand,))
-        else:
-            cursor.execute(update_status_stmt, (zustand, besucher_id,))
+        if lvl != 'warning':
+            lvl = 'success'
+
+            now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            cursor.execute(track_user_stmt, (now, besucher_id, zustand))
+            cursor.execute(check_id_stmt, (besucher_id,))
+            z = cursor.fetchall()
+            if len(z) == 0:
+                cursor.execute(insert_status_stmt, (besucher_id, zustand,))
+            else:
+                cursor.execute(update_status_stmt, (zustand, besucher_id,))
 
         db.commit()
         cursor.close()
