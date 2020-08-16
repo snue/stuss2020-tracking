@@ -18,22 +18,31 @@ scancodes = {
 
 scanner = evdev.InputDevice('/dev/input/{}'.format(sys.argv[1]))
 scanner.grab()
-db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="",
-    database="besuchertracker"
-)
 
-cursor = db.cursor(prepared=True)
+def init_db():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="besuchertracker")
+
+db = init_db()
+
+def get_cursor():
+    global db
+    try:
+        db.ping(reconnect=True, attempts=2, delay=1)
+    except mysql.connector.Error as err:
+        db = init_db()
+    return db.cursor(prepared=True)
 
 ID_LENGTH = 5
 
 
-track_user_stmt='INSERT INTO verlaufsdaten (zeitstempel, besucher_id, aktion) VALUES (%s, %s, %s)'
-check_id_stmt='SELECT zustand FROM zustandsdaten WHERE besucher_id = %s LIMIT 1'
-insert_status_stmt='INSERT INTO zustandsdaten (besucher_id, zustand) VALUES (%s, %s)'
-update_status_stmt='UPDATE zustandsdaten SET zustand = %s WHERE besucher_id = %s'
+track_user_stmt = 'INSERT INTO verlaufsdaten (zeitstempel, besucher_id, aktion) VALUES (%s, %s, %s)'
+check_id_stmt = 'SELECT zustand FROM zustandsdaten WHERE besucher_id = %s LIMIT 1'
+insert_status_stmt = 'INSERT INTO zustandsdaten (besucher_id, zustand) VALUES (%s, %s)'
+update_status_stmt = 'UPDATE zustandsdaten SET zustand = %s WHERE besucher_id = %s'
 
 STATUS_MESSAGE=('KOMMT','GEHT','RESERVIERT')
 status = 'kommt'
@@ -48,15 +57,17 @@ def handle(scan):
         try:
             id = int(scan)
             now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            cursor = get_cursor()
             cursor.execute(track_user_stmt, (now, id, status))
             cursor.execute(check_id_stmt, (id,))
-            cursor.fetchall()
-            if cursor.rowcount == 0:
+            z = cursor.fetchall()
+            if len(z) == 0:
                 cursor.execute(insert_status_stmt, (id, status))
             else:
                 cursor.execute(update_status_stmt, (status, id))
 
             db.commit()
+            cursor.close()
             print('{} ID {} {}'.format(now, id, status))
         except mysql.connector.Error as e:
             print('Warning: Database Error - we are losing data! (Scan: {} / Status: {}) ({})'.format(scan, status, e))
