@@ -12,7 +12,7 @@ After=graphical.target stuss_webui.service
 [Service]
 Environment=DISPLAY=:0.0
 Environment=XAUTHORITY=/home/pi/.Xauthority
-Type=simple
+Type=forking
 User=pi
 Group=pi
 ExecStart=/home/pi/stuss2020-tracking/setup/kiosk.sh
