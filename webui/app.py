@@ -5,14 +5,23 @@ from datetime import datetime
 from flask import Flask, render_template, request, send_from_directory
 app = Flask(__name__)
 
-db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="",
-    database="besuchertracker"
-)
 
-cursor = db.cursor(prepared=True)
+def init_db():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="besuchertracker")
+
+db = init_db()
+
+def get_cursor():
+    global db
+    try:
+        db.ping(reconnect=True, attempts=2, delay=1)
+    except mysql.connector.Error as err:
+        db = init_db()
+    return db.cursor(prepared=True)
 
 get_user_stmt = '''
 SELECT * FROM stammdaten s
@@ -85,6 +94,7 @@ def stammdaten():
 
     message=''
     lvl='info'
+    cursor = get_cursor()
 
     if request.method == 'POST':
         # Update entry from form
@@ -126,12 +136,14 @@ def stammdaten():
             cursor.execute(update_status_stmt, (zustand, besucher_id,))
 
         db.commit()
+        cursor.close()
     else:
         besucher_id = request.args.get('besucher_id', default=0, type=int)
         cursor.execute(get_user_stmt, (besucher_id,))
         besucher = cursor.fetchall()
         cursor.execute(check_id_stmt, (besucher_id,))
         z = cursor.fetchall()
+        cursor.close()
         if len(z):
             zustand = z[0][0]
         else:
@@ -194,10 +206,12 @@ def stammdaten():
 
 @app.route('/verlaufsdaten',methods=['GET'])
 def verlaufsdaten():
+    cursor = get_cursor()
     besucher_id = request.args.get('besucher_id')
     besucher_id = (besucher_id, None)[besucher_id == '']
     cursor.execute(get_tracking_data_stmt, (besucher_id,))
     verlauf = cursor.fetchall()
+    cursor.close()
     return render_template('verlaufsdaten.html',
                            id = besucher_id,
                            verlauf = verlauf)
@@ -205,8 +219,10 @@ def verlaufsdaten():
 
 @app.route('/',methods=['GET'])
 def main():
+    cursor = get_cursor()
     cursor.execute(count_user_status_stmt)
     counts = cursor.fetchall()
+    cursor.close()
     anwesend = sum((0,anzahl)[zustand == 'kommt' ] for anzahl, zustand, status in counts)
     anwesend_gast = sum((0,anzahl)[status == 'gast' and
                                    zustand == 'kommt'] for
