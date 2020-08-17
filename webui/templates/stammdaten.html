@@ -2,7 +2,9 @@
 {% block stammdaten %}active{% endblock %}
 {%block content %}
 {% if message is defined and message != '' %}
-<p>{{ message }}</p>
+<div class="alert alert-{{ lvl }}" role="alert">
+{{ message|safe }}
+</div>
 {% endif %}
 <h1>Stammdatenverwaltung</h1>
 <p class="lead"></p>
