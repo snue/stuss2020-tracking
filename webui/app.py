@@ -94,7 +94,7 @@ CREW_BAND_MAX = 100
 # read banned zip codes. use lk2zip.py for generation.
 try:
     with open(os.path.join(sys.path[0], "BANNED_ZIPCODES"), "r") as f:
-        banned_zipcodes = [zipcode for zipcode in f]
+        banned_zipcodes = [zipcode.strip() for zipcode in f]
 except OSError:
     print('Warning: Could not find BANNED_ZIPCODES file, ignoring... Create it with lk2plz.py')
 
@@ -124,7 +124,7 @@ def stammdaten():
         if len(besucher) == 0:
             if plz in banned_zipcodes:
                 lvl = 'warning'
-                message = 'Besucher kommt aus gesperrter PLZ.'
+                message = 'FEHLER: Besucher kommt aus gesperrter PLZ.'
             else:
                 message = 'Neuer Besucher mit ID {} hinzugef&uuml;gt.'.format(besucher_id)
                 print('Adding new user: {}'.format(besucher_id))
