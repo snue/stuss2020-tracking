@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import mysql.connector
 from datetime import datetime
+import sys
+import os.path
 
 from flask import Flask, render_template, request, send_from_directory
 app = Flask(__name__)
@@ -86,13 +88,15 @@ v.besucher_id = IFNULL(%s,v.besucher_id)
 ORDER BY zeitstempel DESC
 '''
 
-get_district_stmt = "SELECT landkreis FROM landkreise WHERE plz = %s"
-
 GAST_MAX = 700
 CREW_BAND_MAX = 100
 
-# list of banned districts. get the strings from the csv in the setup.
-BANNED_DISTRICTS = ['Landkreis Dingolfing-Landau']
+# read banned zip codes. use lk2zip.py for generation.
+try:
+    with open(os.path.join(sys.path[0], "BANNED_ZIPCODES"), "r") as f:
+        banned_zipcodes = [zipcode for zipcode in f]
+except OSError:
+    print('Warning: Could not find BANNED_ZIPCODES file, ignoring... Create it with lk2plz.py')
 
 @app.route('/stammdaten',methods=['POST','GET'])
 def stammdaten():
@@ -118,19 +122,10 @@ def stammdaten():
         zustand = request.form.get('zustand')
 
         if len(besucher) == 0:
-            # check district
-            cursor.execute(get_district_stmt, (plz,))
-            landkreis = cursor.fetchall()
-            if len(landkreis) == 0:
+            if plz in banned_zipcodes:
                 lvl = 'warning'
-                print('PLZ kann keinem Landkreis zugeordnet werden.')
+                message = 'Besucher kommt aus gesperrter PLZ.'
             else:
-                for lk in landkreis:
-                    if lk[0] in BANNED_DISTRICTS:
-                        lvl = 'warning'
-                        message = 'Besucher kommt aus gesperrtem Landkreis ({}).'.format(lk[0])
-            if lvl != 'warning':
-                # add new guest
                 message = 'Neuer Besucher mit ID {} hinzugef&uuml;gt.'.format(besucher_id)
                 print('Adding new user: {}'.format(besucher_id))
                 cursor.execute(new_user_stmt, (besucher_id,
