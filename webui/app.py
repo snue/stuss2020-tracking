@@ -88,6 +88,8 @@ v.besucher_id = IFNULL(%s,v.besucher_id)
 ORDER BY zeitstempel DESC
 '''
 
+get_district_stmt = "SELECT landkreis FROM landkreise WHERE plz = %s"
+
 GAST_MAX = 700
 CREW_BAND_MAX = 100
 
