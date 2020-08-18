@@ -22,4 +22,9 @@ CREATE TABLE IF NOT EXISTS besuchertracker.verlaufsdaten (
   aktion VARCHAR(45) NULL,
   PRIMARY KEY (id));
 
+CREATE TABLE IF NOT EXISTS besuchertracker.zustandsdaten (
+  besucher_id BIGINT NULL,
+  zustand VARCHAR(45) NULL,
+  PRIMARY KEY (besucher_id));
+
 EOF
