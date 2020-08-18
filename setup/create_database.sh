@@ -22,19 +22,4 @@ CREATE TABLE IF NOT EXISTS besuchertracker.verlaufsdaten (
   aktion VARCHAR(45) NULL,
   PRIMARY KEY (id));
 
-CREATE TABLE IF NOT EXISTS besuchertracker.zustandsdaten (
-  besucher_id BIGINT NULL,
-  zustand VARCHAR(45) NULL,
-  PRIMARY KEY (besucher_id));
-
-CREATE TABLE IF NOT EXISTS besuchertracker.landkreise (
-  id BIGINT NULL,
-  plz VARCHAR(5) NULL,
-  landkreis VARCHAR(255) NULL,
-  bundesland VARCHAR(255) NULL,
-  PRIMARY KEY (id));
-
 EOF
-
-# populate districts table
-python3 csv2db.py
