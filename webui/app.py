@@ -248,8 +248,8 @@ def main():
                                  status == 'nicht registriert') ] for
                      anzahl, zustand, status in counts)
     reserviert_crew_band = sum((0,anzahl)[zustand == 'reserviert' and
-                                (status == 'gast' or
-                                 status == 'nicht registriert') ] for
+                                (status == 'crew' or
+                                 status == 'band') ] for
                      anzahl, zustand, status in counts)
     registriert = sum((0,anzahl)[status != 'nicht registriert'] for
                       anzahl, zustand, status in counts)
