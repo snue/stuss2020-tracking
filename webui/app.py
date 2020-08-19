@@ -96,7 +96,7 @@ try:
     with open(os.path.join(sys.path[0], "BANNED_ZIPCODES"), "r") as f:
         banned_zipcodes = [zipcode.strip() for zipcode in f]
 except OSError:
-        banned_zipcodes = []
+    banned_zipcodes = []
     print('Warning: Could not find BANNED_ZIPCODES file, ignoring... Create it with lk2plz.py')
 
 @app.route('/stammdaten',methods=['POST','GET'])
