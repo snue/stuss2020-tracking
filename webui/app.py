@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import mysql.connector
 from datetime import datetime
+import sys
+import os.path
 
 from flask import Flask, render_template, request, send_from_directory
 app = Flask(__name__)
@@ -89,6 +91,14 @@ ORDER BY zeitstempel DESC
 GAST_MAX = 700
 CREW_BAND_MAX = 100
 
+# read banned zip codes. use lk2zip.py for generation.
+try:
+    with open(os.path.join(sys.path[0], "BANNED_ZIPCODES"), "r") as f:
+        banned_zipcodes = [zipcode.strip() for zipcode in f]
+except OSError:
+    banned_zipcodes = []
+    print('Warning: Could not find BANNED_ZIPCODES file, ignoring... Create it with lk2plz.py')
+
 @app.route('/stammdaten',methods=['POST','GET'])
 def stammdaten():
 
@@ -113,27 +123,33 @@ def stammdaten():
         zustand = request.form.get('zustand')
 
         if len(besucher) == 0:
-            message = 'Neuer Besucher mit ID {} hinzugef&uuml;gt.'.format(besucher_id)
-            print('Adding new user: {}'.format(besucher_id))
-            cursor.execute(new_user_stmt, (besucher_id,
-                                           name, adresse1, plz, adresse2,
-                                           telefon,email,status,coronawarn))
+            if plz in banned_zipcodes:
+                lvl = 'warning'
+                message = 'FEHLER: Besucher kommt aus gesperrter PLZ.'
+            else:
+                message = 'Neuer Besucher mit ID {} hinzugef&uuml;gt.'.format(besucher_id)
+                print('Adding new user: {}'.format(besucher_id))
+                cursor.execute(new_user_stmt, (besucher_id,
+                                               name, adresse1, plz, adresse2,
+                                               telefon,email,status,coronawarn))
         else:
             message = 'Besucher mit ID {} aktualisiert.'.format(besucher_id)
             print('Updating user {}'.format(besucher_id))
             cursor.execute(update_user_stmt, (name, adresse1, plz, adresse2,
                                               telefon,email,status,coronawarn,
                                               besucher_id))
-        lvl = 'success'
 
-        now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-        cursor.execute(track_user_stmt, (now, besucher_id, zustand))
-        cursor.execute(check_id_stmt, (besucher_id,))
-        z = cursor.fetchall()
-        if len(z) == 0:
-            cursor.execute(insert_status_stmt, (besucher_id, zustand,))
-        else:
-            cursor.execute(update_status_stmt, (zustand, besucher_id,))
+        if lvl != 'warning':
+            lvl = 'success'
+
+            now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            cursor.execute(track_user_stmt, (now, besucher_id, zustand))
+            cursor.execute(check_id_stmt, (besucher_id,))
+            z = cursor.fetchall()
+            if len(z) == 0:
+                cursor.execute(insert_status_stmt, (besucher_id, zustand,))
+            else:
+                cursor.execute(update_status_stmt, (zustand, besucher_id,))
 
         db.commit()
         cursor.close()
